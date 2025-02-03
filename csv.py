@@ -1,3 +1,7 @@
+from rich.console import Console
+from rich.table import Table
+
+
 class csv_data:
     def __init__(self,file_path,sep=','):
         """Crée l'objet cd (moche il faut changer le nom psk cd ca fait commande terminal et j'aime pas)
@@ -92,11 +96,34 @@ class csv_data:
             for stat, value in values.items():
                 print(f"\t- {stat}: {value}")
             
+    def sort(self,column,ascending=True,inplace=False):
+        index = self.columns.index(column)
+        self.lines.sort(key=lambda x:x[index], reverse=not ascending)
+        for i, col in enumerate(self.columns):
+            self.data[col] = [row[i] for row in self.lines]
+
+    def head(self, n=5):
+        console = Console()
+        table = Table(show_header=True, header_style="bold cyan")
+
+        # Add columns with styling
+        for col in self.columns:
+            table.add_column(col, justify="left", style="bold white")
+
+        # Add rows
+        for i in range(min(n, len(self.lines))):
+            row = [str(self.data[col][i]) for col in self.columns]
+            table.add_row(*row)
+
+        console.print(table)
+
+
 
 
 
 
 cd=csv_data("D:\Downloads\iris.csv",sep=";")
-print(cd.columns)
-cd.describe()
-
+print(cd.columns[2])
+cd.head()
+cd.sort(cd.columns[2],ascending=False)
+cd.head()
