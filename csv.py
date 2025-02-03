@@ -42,29 +42,53 @@ class csv_data:
         
         try:
             type_value = type(int(self.data[column][0]))
-            return type_value
+            return str(type_value).split()[1][1:-2]
         except:
             pass
 
         try: 
             type_value = type(float(self.data[column][0]))
-            return type_value
+            return str(type_value).split()[1][1:-2]
         except:
             pass
 
-        return type(self.data[column][0])
+        return str(type(self.data[column][0])).split()[1][1:-2]
     
     def types(self):
         """Affiche les types de colonnes en plus joli"""
         print('Les types de chaque colonne:')
         for column, type in self.dtypes.items():
-            print(f"\t- {column}: {str(type).split()[1][1:-2]}")
+            print(f"\t- {column}: {type}")
         
 
-    
+    def describe(self):
+        '''Description du dataset (colonnes) Pour le moment uniquement valeurs numériques, mais par la suite 
+        on traitera aussi le reste je pense'''
+        stats = {}
+        for column in self.columns:
+            if self.dtypes[column]=='float' or self.dtypes[column]=='int':
+                stats[column]={}
+                stats[column]['sum'] = sum(self.data[column])
+                stats[column]['mean'] = sum(self.data[column])/len(self.data[column])
+                stats[column]['min'] = min(self.data[column])
+                stats[column]['max'] = max(self.data[column])
+
+            if self.dtypes[column]=='list':
+                pass
+
+            if self.dtypes[column]=='bool':
+                pass
+
+
+        for col,values in stats.items():
+            print(f"Stats de {col}")
+            for stat, value in values.items():
+                print(f"\t- {stat}: {value}")
+
+
 
 
 cd=csv_data("D:\Downloads\iris.csv",sep=";")
 print(cd.columns)
-print(cd.types())
+print(cd.describe())
 
