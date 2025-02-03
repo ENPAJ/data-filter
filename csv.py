@@ -34,6 +34,13 @@ class csv_data:
             #à changer si les csv peuvent être sales mais flemme un peu psk 
             # c'est long et pas opti
             self.dtypes[column] = self.list_type(column)
+            if self.dtypes[column]=='int':
+                self.data[column]=list(map(int,self.data[column]))
+            if self.dtypes[column]=='float':
+                self.data[column]=list(map(float,self.data[column]))
+            #ajouter les types suivants
+            
+            
 
     def list_type(self,column):
         # à modifier si le csv peut avoir des mixed data
@@ -84,11 +91,12 @@ class csv_data:
             print(f"Stats de {col}")
             for stat, value in values.items():
                 print(f"\t- {stat}: {value}")
+            
 
 
 
 
 cd=csv_data("D:\Downloads\iris.csv",sep=";")
 print(cd.columns)
-print(cd.describe())
+cd.describe()
 
