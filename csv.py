@@ -24,7 +24,6 @@ class csv_data:
             map_index[index] = column
 
         for i in self.lines:
-            print(i)
             for j in range(len(i)):
                 self.data[map_index[j]].append(i[j])
 
@@ -38,12 +37,34 @@ class csv_data:
 
     def list_type(self,column):
         # à modifier si le csv peut avoir des mixed data
+        if self.data[column][0]=='':
+            return None
+        
+        try:
+            type_value = type(int(self.data[column][0]))
+            return type_value
+        except:
+            pass
+
+        try: 
+            type_value = type(float(self.data[column][0]))
+            return type_value
+        except:
+            pass
+
         return type(self.data[column][0])
+    
+    def types(self):
+        """Affiche les types de colonnes en plus joli"""
+        print('Les types de chaque colonne:')
+        for column, type in self.dtypes.items():
+            print(f"\t- {column}: {str(type).split()[1][1:-2]}")
+        
 
     
 
 
 cd=csv_data("D:\Downloads\iris.csv",sep=";")
 print(cd.columns)
-print(cd.dtypes)
+print(cd.types())
 
