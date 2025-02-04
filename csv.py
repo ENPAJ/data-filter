@@ -117,6 +117,7 @@ class csv_data:
 
 
 
+
     def head(self, n=5):
         console = Console()
         table = Table(show_header=True, header_style="bold cyan")
@@ -131,9 +132,6 @@ class csv_data:
             table.add_row(*row)
 
         console.print(table)
-
-
-
 
 
 
