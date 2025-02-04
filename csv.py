@@ -1,9 +1,19 @@
 from rich.console import Console
 from rich.table import Table
 
+def read_csv(file_path, sep=",",encoding='utf-8'):
+    """Lecture du fichier csv, prend le séparateur et le file_path"""
+    with open(file_path, mode='r',encoding='utf-8') as f:
+        lines = f.readlines()
+
+    columns = lines[0].strip().split(sep)
+    data = [line.strip().split(sep) for line in lines[1:]]
+    return csv_data(columns,data)
+
+
 
 class csv_data:
-    def __init__(self,file_path,sep=','):
+    def __init__(self,columns,data,sep=','):
         """Crée l'objet cd (moche il faut changer le nom psk cd ca fait commande terminal et j'aime pas)
         Il a plusieurs attributs sympas: 
         data -> data sous forme de dictionnaire avec les colonnes
@@ -11,25 +21,16 @@ class csv_data:
         columns -> liste des colonnes
         dtypes -> les types de chaque colonne
         """
-        self.lines=[]
-        self.columns = []
-        #Lecture du csv ligne par ligne et stockage
-        with open(file_path, mode='r', encoding='utf-8') as f:
-            lines = f.readlines()
-            self.columns = lines[0].strip().split(sep)
-            for line in lines[1:]:
-                self.lines.append(line.strip().split(sep))
+        self.lines=data
+        self.columns = columns
     
         #Data sous forme de colonnes
         self.data={}
         map_index={}
         for index,column in enumerate(self.columns):
             self.data[column]=[]
-            map_index[index] = column
-
-        for i in self.lines:
-            for j in range(len(i)):
-                self.data[map_index[j]].append(i[j])
+            for row in self.lines:
+                self.data[column].append(row[index])
 
         #Enregistrement des types des colonnes dans un dict
         self.dtypes = {}
@@ -43,7 +44,8 @@ class csv_data:
             if self.dtypes[column]=='float':
                 self.data[column]=list(map(float,self.data[column]))
             #ajouter les types suivants
-            
+        
+
             
     def __getitem__(self, key):
         if isinstance(key,int):
@@ -135,8 +137,6 @@ class csv_data:
 
 
 
-cd=csv_data("D:\Downloads\iris.csv",sep=";")
-print(cd.columns[2])
+cd=read_csv("D:\Downloads\iris.csv",sep=";")
+cd.sort([cd.columns[1],cd.columns[0]],ascending=False)
 cd.head()
-cd.sort(cd.columns[2],ascending=False)
-print(cd[3])
