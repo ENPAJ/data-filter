@@ -45,6 +45,13 @@ class csv_data:
             #ajouter les types suivants
             
             
+    def __getitem__(self, key):
+        if isinstance(key,int):
+            return self.lines[key]
+        
+        if isinstance(key,str):
+            return self.data[key]
+        
 
     def list_type(self,column):
         # à modifier si le csv peut avoir des mixed data
@@ -96,11 +103,17 @@ class csv_data:
             for stat, value in values.items():
                 print(f"\t- {stat}: {value}")
             
-    def sort(self,column,ascending=True,inplace=False):
-        index = self.columns.index(column)
-        self.lines.sort(key=lambda x:x[index], reverse=not ascending)
+    def sort(self,cols,ascending=True,inplace=False):
+        if isinstance(cols, str):  
+            cols = [cols]
+
+        indices = [self.columns.index(col) for col in cols]
+        self.lines.sort(key=lambda x:tuple(x[i] for i in indices), reverse=not ascending)
+
         for i, col in enumerate(self.columns):
             self.data[col] = [row[i] for row in self.lines]
+
+
 
     def head(self, n=5):
         console = Console()
@@ -126,4 +139,4 @@ cd=csv_data("D:\Downloads\iris.csv",sep=";")
 print(cd.columns[2])
 cd.head()
 cd.sort(cd.columns[2],ascending=False)
-cd.head()
+print(cd[3])
