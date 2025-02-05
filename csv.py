@@ -54,6 +54,9 @@ class csv_data:
         if isinstance(key,str):
             return self.data[key]
         
+        if isinstance(key,slice):
+            pass
+        
 
     def list_type(self,column):
         # à modifier si le csv peut avoir des mixed data
@@ -108,6 +111,7 @@ class csv_data:
     def sort(self,cols,ascending=True,inplace=False):
         if isinstance(cols, str):  
             cols = [cols]
+            
 
         indices = [self.columns.index(col) for col in cols]
         self.lines.sort(key=lambda x:tuple(x[i] for i in indices), reverse=not ascending)
