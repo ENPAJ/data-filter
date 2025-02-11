@@ -1,6 +1,26 @@
 from rich.console import Console
 from rich.table import Table
 
+def read_file(file_path,sep=",",encoding="utf-8"):
+    if file_path.split(".")[1]=="csv":
+        read_csv(file_path,sep=sep,encoding=encoding)
+    elif file_path.split(".")[1]=="json":
+        read_json(file_path)
+    elif file_path.split(".")[1]=="yaml":
+        read_yaml(file_path)
+    elif file_path.split(".")[1]=="xml":
+        read_xml(file_path)
+
+def read_xml(file_path):
+    pass
+
+def read_yaml(file_path):
+    pass
+
+def read_json(file_path):
+    pass
+
+
 def read_csv(file_path, sep=",",encoding='utf-8'):
     """Lecture du fichier csv, prend le séparateur et le file_path"""
     with open(file_path, mode='r',encoding='utf-8') as f:
@@ -9,6 +29,9 @@ def read_csv(file_path, sep=",",encoding='utf-8'):
     columns = lines[0].strip().split(sep)
     data = [line.strip().split(sep) for line in lines[1:]]
     return csv_data(columns,data)
+
+
+
 
 
 
@@ -119,6 +142,7 @@ class csv_data:
         for i, col in enumerate(self.columns):
             self.data[col] = [row[i] for row in self.lines]
 
+    
 
 
 
