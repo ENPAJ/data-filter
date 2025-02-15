@@ -98,7 +98,8 @@ class csv_data:
 
 
 # Exemple d'utilisation
-cd = read_csv("D:\\Downloads\\iris.csv", sep=";")
-filtered_cd = cd.filter("sepal_length", lambda x: float(x) > 5.0)
-filtered_cd.export_csv("D:\\Downloads\\iris_filtered.csv")
+cd = read_csv("C:\\Users\\pauli\\Downloads\\iris.csv", sep=";")
+print(cd.columns)
+filtered_cd = cd.filter("Longueur de sépale", lambda x: float(x) > 5.0)
+filtered_cd.export_csv("C:\\Users\\pauli\\Downloads\\iris.csv")
 cd.head()
