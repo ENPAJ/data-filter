@@ -1,160 +1,95 @@
 from rich.console import Console
 from rich.table import Table
-
-def read_file(file_path,sep=",",encoding="utf-8"):
-    if file_path.split(".")[1]=="csv":
-        read_csv(file_path,sep=sep,encoding=encoding)
-    elif file_path.split(".")[1]=="json":
-        read_json(file_path)
-    elif file_path.split(".")[1]=="yaml":
-        read_yaml(file_path)
-    elif file_path.split(".")[1]=="xml":
-        read_xml(file_path)
-
-def read_xml(file_path):
-    pass
-
-def read_yaml(file_path):
-    pass
-
-def read_json(file_path):
-    pass
+import os
 
 
-def read_csv(file_path, sep=",",encoding='utf-8'):
-    """Lecture du fichier csv, prend le séparateur et le file_path"""
-    with open(file_path, mode='r',encoding='utf-8') as f:
+def read_file(file_path, sep=",", encoding="utf-8"):
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext == ".csv":
+        return read_csv(file_path, sep=sep, encoding=encoding)
+    elif ext == ".json":
+        return read_json(file_path)
+    elif ext in [".yaml", ".yml"]:
+        return read_yaml(file_path)
+    elif ext == ".xml":
+        return read_xml(file_path)
+    else:
+        raise ValueError("Format non supporté.")
+
+
+def read_csv(file_path, sep=",", encoding="utf-8"):
+    """Lecture du fichier csv, prend en compte les valeurs manquantes"""
+    with open(file_path, mode='r', encoding=encoding) as f:
         lines = f.readlines()
 
     columns = lines[0].strip().split(sep)
     data = [line.strip().split(sep) for line in lines[1:]]
-    return csv_data(columns,data)
-
-
-
-
+    
+    # Gestion des valeurs manquantes
+    for row in data:
+        while len(row) < len(columns):
+            row.append('')  # Remplit les valeurs manquantes par une chaîne vide
+    
+    return csv_data(columns, data)
 
 
 class csv_data:
-    def __init__(self,columns,data,sep=','):
-        """Crée l'objet cd (moche il faut changer le nom psk cd ca fait commande terminal et j'aime pas)
-        Il a plusieurs attributs sympas: 
-        data -> data sous forme de dictionnaire avec les colonnes
-        lines-> data sous forme de lignes, pas sur que j'aime bien, peut être à retirer si ca sert à rien honnêtement
-        columns -> liste des colonnes
-        dtypes -> les types de chaque colonne
-        """
-        self.lines=data
+    def __init__(self, columns, data, sep=','):
+        self.lines = data
         self.columns = columns
-    
-        #Data sous forme de colonnes
-        self.data={}
-        map_index={}
-        for index,column in enumerate(self.columns):
-            self.data[column]=[]
-            for row in self.lines:
-                self.data[column].append(row[index])
+        
+        # Data sous forme de dictionnaire
+        self.data = {column: [] for column in self.columns}
+        for row in self.lines:
+            for index, column in enumerate(self.columns):
+                self.data[column].append(row[index] if index < len(row) else '')
 
-        #Enregistrement des types des colonnes dans un dict
+        # Détection des types de colonnes
         self.dtypes = {}
         for column in self.columns:
-            #part du principe que le csv est propre dès le début
-            #à changer si les csv peuvent être sales mais flemme un peu psk 
-            # c'est long et pas opti
             self.dtypes[column] = self.list_type(column)
-            if self.dtypes[column]=='int':
-                self.data[column]=list(map(int,self.data[column]))
-            if self.dtypes[column]=='float':
-                self.data[column]=list(map(float,self.data[column]))
-            #ajouter les types suivants
-        
+            if self.dtypes[column] == 'int':
+                self.data[column] = list(map(lambda x: int(x) if x else None, self.data[column]))
+            if self.dtypes[column] == 'float':
+                self.data[column] = list(map(lambda x: float(x) if x else None, self.data[column]))
 
-            
     def __getitem__(self, key):
-        if isinstance(key,int):
+        if isinstance(key, int):
             return self.lines[key]
-        
-        if isinstance(key,str):
+        if isinstance(key, str):
             return self.data[key]
-        
-        if isinstance(key,slice):
-            pass
-        
+        if isinstance(key, slice):
+            return self.lines[key]
 
-    def list_type(self,column):
-        # à modifier si le csv peut avoir des mixed data
-        if self.data[column][0]=='':
-            return None
-        
+    def list_type(self, column):
         try:
-            type_value = type(int(self.data[column][0]))
-            return str(type_value).split()[1][1:-2]
+            if self.data[column][0] == '':
+                return None
+            return type(eval(self.data[column][0])).__name__
         except:
-            pass
+            return 'str'
 
-        try: 
-            type_value = type(float(self.data[column][0]))
-            return str(type_value).split()[1][1:-2]
-        except:
-            pass
+    def filter(self, col, condition):
+        """Filtre les lignes en fonction d'une condition sur une colonne"""
+        index = self.columns.index(col)
+        filtered_data = [row for row in self.lines if condition(row[index])]
+        return csv_data(self.columns, filtered_data)
 
-        return str(type(self.data[column][0])).split()[1][1:-2]
-    
-    def types(self):
-        """Affiche les types de colonnes en plus joli"""
-        print('Les types de chaque colonne:')
-        for column, type in self.dtypes.items():
-            print(f"\t- {column}: {type}")
-        
-
-    def describe(self):
-        '''Description du dataset (colonnes) Pour le moment uniquement valeurs numériques, mais par la suite 
-        on traitera aussi le reste je pense'''
-        stats = {}
-        for column in self.columns:
-            if self.dtypes[column]=='float' or self.dtypes[column]=='int':
-                stats[column]={}
-                stats[column]['sum'] = sum(self.data[column])
-                stats[column]['mean'] = sum(self.data[column])/len(self.data[column])
-                stats[column]['min'] = min(self.data[column])
-                stats[column]['max'] = max(self.data[column])
-
-            if self.dtypes[column]=='list':
-                pass
-
-            if self.dtypes[column]=='bool':
-                pass
-
-
-        for col,values in stats.items():
-            print(f"Stats de {col}")
-            for stat, value in values.items():
-                print(f"\t- {stat}: {value}")
-            
-    def sort(self,cols,ascending=True,inplace=False):
-        if isinstance(cols, str):  
-            cols = [cols]
-            
-
-        indices = [self.columns.index(col) for col in cols]
-        self.lines.sort(key=lambda x:tuple(x[i] for i in indices), reverse=not ascending)
-
-        for i, col in enumerate(self.columns):
-            self.data[col] = [row[i] for row in self.lines]
-
-    
-
-
+    def export_csv(self, file_path, sep=",", encoding="utf-8"):
+        """Export des données en CSV"""
+        with open(file_path, mode='w', encoding=encoding) as f:
+            f.write(sep.join(self.columns) + "\n")
+            for row in self.lines:
+                f.write(sep.join(map(str, row)) + "\n")
+        print(f"Fichier exporté sous {file_path}")
 
     def head(self, n=5):
         console = Console()
         table = Table(show_header=True, header_style="bold cyan")
 
-        # Add columns with styling
         for col in self.columns:
             table.add_column(col, justify="left", style="bold white")
 
-        # Add rows
         for i in range(min(n, len(self.lines))):
             row = [str(self.data[col][i]) for col in self.columns]
             table.add_row(*row)
@@ -162,7 +97,8 @@ class csv_data:
         console.print(table)
 
 
-
-cd=read_csv("D:\Downloads\iris.csv",sep=";")
-cd.sort([cd.columns[1],cd.columns[0]],ascending=False)
+# Exemple d'utilisation
+cd = read_csv("D:\\Downloads\\iris.csv", sep=";")
+filtered_cd = cd.filter("sepal_length", lambda x: float(x) > 5.0)
+filtered_cd.export_csv("D:\\Downloads\\iris_filtered.csv")
 cd.head()
